@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title></title>
+<!-- Bootstrap -->
+<link href="css/bootstrap.min.css" rel="stylesheet">
+
+
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-md-1"></div>
+			<div class="col-md-4"></div>
+			<div class="col-md-6">
+				<div class="row">
+					<table class="table table-bordered table-hover table-condensed">
+						<thead>
+							<tr>
+								<th>员工编号</th>
+								<th>员工姓名</th>
+								<th>经度</th>
+								<th>纬度</th>
+								<th>地理位置</th>
+								<th>操作</th>
+							</tr>
+						</thead>
+						<tbody id="content">
+							<tr>
+								<td>01</td>
+								<td>张三</td>
+								<td>112.35</td>
+								<td>39.85</td>
+								<td>中国北京</td>
+								<td>查看</td>
+							</tr>
+							<tr>
+								<td>02</td>
+								<td>李四</td>
+								<td>112.12</td>
+								<td>32.23</td>
+								<td>中国，武汉</td>
+								<td>查看</td>
+							</tr>
+							<tr>
+								<td>01</td>
+								<td>王五</td>
+								<td>110.89</td>
+								<td>31.67</td>
+								<td>中国，成都</td>
+								<td>查看</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="row">
+					<div class="col-md-5"></div>
+					<div class="col-md-7" id="pageCount"></div>
+				</div>
+			</div>
+			<div class="col-md-1"></div>
+		</div>
+	</div>
+
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	<script src="js/jquery-1.9.1.min.js"></script>
+	<!-- Include all compiled plugins (below), or include individual files as needed -->
+	<script src="js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+		var curPage = 1; //当前页码  
+		var total, pageSize, totalPage;
+		$(document).ready(function() {
+		
+			getData(1);
+
+		});
+		//获取分页条  
+		function getPageBar() {
+			//页码大于最大页数  
+			if (curPage > totalPage)
+				curPage = totalPage;
+			//页码小于1  
+			if (curPage < 1)
+				curPage = 1;
+			pageStr = "<span>共" + total + "条</span><span>" + curPage + "/"
+					+ totalPage + "</span>";
+
+			//如果是第一页  
+			if (curPage == 1) {
+				pageStr += "<span>首页</span><span>上一页</span>";
+			} else {
+				pageStr += "<span><a href='javascript:getData(1)' rel='1'>首页</a></span><span><a href='javascript:getData("+(curPage - 1)+")' rel='"
+						+ (curPage - 1) + "'>上一页</a></span>";
+			}
+
+			//如果是最后页  
+			if (curPage >= totalPage) {
+				pageStr += "<span>下一页</span><span>尾页</span>";
+			} else {
+				pageStr += "<span><a href='javascript:getData("+((curPage) + 1)+")' rel='"
+						+ (parseInt(curPage) + 1)
+						+ "'>下一页</a></span><span><a href='javascript:getData("+totalPage+")' rel='"
+						+ totalPage + "'>尾页</a></span>";
+			}
+
+			$("#pageCount").html(pageStr);
+		}
+
+		function getData(page) {
+		  
+			$.ajax({
+				type : 'POST',
+				url : 'http://localhost:8080/LocationManager/location',
+				data : {
+					'pageno' : page
+				},
+				dataType : 'json',
+				success : function(json) {
+					$("#content").empty();
+					total = json.total; //总记录数  
+					pageSize = json.pageSize; //每页显示条数  
+					curPage = json.page; //当前页  
+					totalPage = json.totalPage; //总页数  
+
+					var list = json.list;//返回内容
+					for(var i=0;i<list.length;i++){
+					 var body="<tr>";
+				    body=body+"<td>"+list[i].no+"</td>";
+				    body=body+"<td>"+"01"+"</td>";
+				    body=body+"<td>"+list[i].lat+"</td>";
+				    body=body+"<td>"+list[i].lng+"</td>";
+				    body=body+"<td>"+list[i].address+"</td>";
+				    body=body+"<td>"+"查看"+"</td>";
+				    body=body+"</tr>"
+				     $("#content").append(body);
+					}
+				 
+
+				},
+				complete : function() { //生成分页条  
+					getPageBar();
+				},
+				error : function() {
+					alert("数据加载失败");
+				}
+			});
+		}
+	</script>
+</body>
+</html>
